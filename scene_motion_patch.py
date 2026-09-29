@@ -55,10 +55,15 @@ s, n = re.subn(r'function buildTenSecondClip\(aiVideoPath, outPath\) \{.*?\n\}',
 if n != 1: raise SystemExit(f'buildTenSecondClip replacement failed: {n}')
 
 # Show the actual spoken Hindi in the video, not the short Roman Hinglish post caption.
-s, n = re.subn(r'createSrt\((?:caption|fact), Math\.min\(audioDuration, TOTAL_VIDEO_DURATION\), srtPath\);', 'createSrt(fact, Math.min(audioDuration, TOTAL_VIDEO_DURATION), srtPath);', s, count=1)
-if n != 1: raise SystemExit('subtitle source replacement failed')
-s, n = re.subn(r'FontName=DejaVu Sans', 'FontName=Noto Sans Devanagari', s, count=1)
-if n != 1: raise SystemExit('subtitle font replacement failed')
+# Make subtitle fixes idempotent: the main generator may already contain them.
+if 'createSrt(caption, Math.min(audioDuration, TOTAL_VIDEO_DURATION), srtPath);' in s:
+    s = s.replace(
+        'createSrt(caption, Math.min(audioDuration, TOTAL_VIDEO_DURATION), srtPath);',
+        'createSrt(fact, Math.min(audioDuration, TOTAL_VIDEO_DURATION), srtPath);',
+        1
+    )
+if 'FontName=DejaVu Sans' in s:
+    s = s.replace('FontName=DejaVu Sans', 'FontName=Noto Sans Devanagari', 1)
 
 # Generate three different topic-specific images. The visual identity stays documentary-like,
 # but each scene must actually show a different part of the same trending topic.
