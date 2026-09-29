@@ -153,11 +153,35 @@ function runFfmpeg(args) { execFileSync('ffmpeg', ['-y', ...args], { stdio: 'inh
 
 function buildScenePrompts(baseVisual) {
   const topic = process.env.AI_TECH_TOPIC || 'AI & Technology';
-  const shared = `Create a coherent photorealistic technology documentary about "${topic}". Keep visual identity consistent where appropriate, but make every scene visually different. Vertical 9:16. ${baseVisual}`;
+  const lower = topic.toLowerCase();
+  const isRobot = /robot|humanoid|रोबोट/.test(lower);
+  const isChip = /chip|semiconductor|processor|gpu|cpu|सर्किट|सेमीकंडक्टर/.test(lower);
+  const isQuantum = /quantum|क्वांटम/.test(lower);
+
+  let scene1, scene2, scene3;
+  if (isRobot) {
+    scene1 = 'Show the robot itself as the hero: detailed cameras/sensors, articulated joints, motors, hands and actuator hardware. Close-up documentary shot, clearly recognizable humanoid robotics hardware.';
+    scene2 = 'Show the robot actively operating: sensors observing an object, onboard computer/perception display, articulated arm or hand moving with visible servo/joint action. Make the physical cause-and-effect obvious.';
+    scene3 = 'Show the same type of humanoid robot performing a useful real task in a believable workplace such as a factory, warehouse or service environment. Wider shot, clear task action, not just posing.';
+  } else if (isChip) {
+    scene1 = 'Show the actual hardware: close macro view of a modern processor/semiconductor package, wafer, circuit traces and a realistic electronics laboratory or fabrication environment.';
+    scene2 = 'Show the chip/process working: microscopic circuit activity, signals moving through silicon, fabrication machinery or a realistic engineering test setup. Make the process visually understandable.';
+    scene3 = 'Show the technology inside a real product or system such as a computer, AI server, phone, vehicle or industrial machine, with the hardware clearly connected to its practical function.';
+  } else if (isQuantum) {
+    scene1 = 'Show a real quantum-computing laboratory environment with a cryogenic system, dilution refrigerator hardware, control electronics and scientific instrumentation. Avoid fantasy holograms.';
+    scene2 = 'Show the underlying process: quantum-control electronics, cryogenic wiring and a conceptual but physically grounded visualization of qubits being controlled. Keep the hardware central.';
+    scene3 = 'Show a believable application environment where quantum computing could be used for optimization, simulation or scientific research, with real computers and laboratory equipment rather than sci-fi imagery.';
+  } else {
+    scene1 = 'Show the exact physical hardware, machine, device, chip or technical setup that defines the topic. Make the technology itself the hero, with a close establishing shot and visible component detail.';
+    scene2 = 'Show the technology actually working or the underlying mechanism. Use visible components interacting, data/control signals, moving parts or a clear technical process. The action must be understandable from the image alone.';
+    scene3 = 'Show the same technology solving a real-world problem in a believable environment. Make the practical action obvious and use a different location, camera angle and composition from scenes 1 and 2.';
+  }
+
+  const shared = `Create a coherent photorealistic technology documentary about "${topic}". Vertical 9:16 composition. This must be an evergreen AI & Technology explainer, not news footage. Keep the same technology identity across scenes but never repeat the same composition. Use realistic materials, engineering details, natural lighting and believable environments. No generic portraits, no psychology imagery, no phone-scrolling filler, no unrelated people, no fake readable text, no fake logos, no watermark. The topic is: ${topic}. Base visual description: ${baseVisual}`;
   return [
-    `${shared} Scene 1: CLOSE-UP/ESTABLISHING SHOT. Clearly show the specific hardware, device, chip, machine, interface or technical environment that represents the topic. Slow push-in, strong detail, no generic human portrait.`,
-    `${shared} Scene 2: PROCESS SHOT. Show the technology actually working: data moving through a system, components interacting, a machine operating, or a clear before-to-after technical process. Use a different camera angle and composition with visible motion.`,
-    `${shared} Scene 3: REAL-WORLD APPLICATION SHOT. Show a believable practical use of the same technology in a real environment. Wider composition, different location or setup, clear cause-and-effect, subtle camera movement.`
+    `${shared} SCENE 1 — HARDWARE/IDENTITY: ${scene1} Camera: slow controlled push-in. Strong detail and clear subject separation.`,
+    `${shared} SCENE 2 — HOW IT WORKS: ${scene2} Camera: different angle and closer action framing. Show real physical or technical motion, not a static pose.`,
+    `${shared} SCENE 3 — REAL APPLICATION: ${scene3} Camera: wider composition in a different environment. Show cause-and-effect and a visible useful task.`
   ];
 }
 
@@ -182,7 +206,7 @@ function buildReel(scenePaths, audioPath, srtPath, finalPath) {
   console.log(`Voice duration: ${audioDuration.toFixed(2)}s; visual duration: exactly ${TOTAL_VIDEO_DURATION}s.`);
   concatScenes(scenePaths, visualVideo);
 
-  const subtitleFilter = `subtitles=${srtPath}:original_size=1080x1920:force_style='FontName=DejaVu Sans,FontSize=9,PrimaryColour=&H00FFFFFF,OutlineColour=&HCC000000,Outline=1,Shadow=0,Alignment=2,MarginV=55,WrapStyle=2,BorderStyle=1,Spacing=0'`;
+  const subtitleFilter = `subtitles=${srtPath}:original_size=1080x1920:force_style='FontName=Noto Sans Devanagari,FontSize=9,PrimaryColour=&H00FFFFFF,OutlineColour=&HCC000000,Outline=1,Shadow=0,Alignment=2,MarginV=55,WrapStyle=2,BorderStyle=1,Spacing=0'`;
   runFfmpeg([
     '-i', visualVideo,
     '-i', audioPath,
@@ -227,7 +251,7 @@ VISUAL:
     visualMatch = fallback.match(/VISUAL:\s*([\s\S]*)$/i);
     fact = factMatch?.[1]?.trim();
     visual = visualMatch?.[1]?.trim();
-    caption = 'Kabhi kabhi dimaag kisi baat ko turant yaad nahi karta, lekin background mein us information ko process karta rehta hai.';
+    caption = `${topic} को आसान हिंदी में समझिए — यह क्या है, कैसे काम करती है और इसका इस्तेमाल कहाँ होता है।`;
   }
   if (!fact || !caption || !visual) throw new Error(`Could not create fact/caption/visual content: ${normalized.slice(0, 1000)}`);
 
@@ -245,7 +269,7 @@ VISUAL:
   console.log('Generating Hindi voice...');
   generateHindiVoice(fact, audioPath);
   const audioDuration = probeDuration(audioPath);
-  createSrt(caption, Math.min(audioDuration, TOTAL_VIDEO_DURATION), srtPath);
+  createSrt(fact, Math.min(audioDuration, TOTAL_VIDEO_DURATION), srtPath);
 
   for (let i = 0; i < 3; i++) {
     console.log(`Generating image ${i + 1}/3...`);
