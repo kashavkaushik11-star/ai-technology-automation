@@ -24,6 +24,9 @@ async function main() {
 
   const runNumber = Number(process.env.GITHUB_RUN_NUMBER || 1);
   const selectedTopic = selectTopic(runNumber);
+  // Pass the deterministic rotation topic directly into the video generator.
+  // This prevents viral_video.js from falling back to a generic AI & Technology topic.
+  process.env.AI_TECH_TOPIC = selectedTopic;
 
   fs.writeFileSync(path.join(process.cwd(), 'output', 'google_trends.json'), JSON.stringify({
     source: 'NOT USED - AI/Tech rotation only',
