@@ -73,13 +73,15 @@ async function main() {
     return;
   }
 
-  const selectedCandidate = trends.candidates?.length ? selectRotating(trends.candidates) : null;\n  const selectedTrend = selectedCandidate?.title?.trim() || '';
+  const selectedCandidate = trends.candidates?.length ? selectRotating(trends.candidates) : null;
+  const selectedTrend = selectedCandidate?.title?.trim() || '';
   if (!selectedTrend) {
     throw new Error('No Google Trends topic was selected; refusing to generate a generic fact video.');
   }
 
   fs.writeFileSync(path.join(process.cwd(), 'output', 'selected_trend.txt'), selectedTrend + '\n', 'utf8');
-  console.log(`AI/Tech selected topic: ${selectedTrend}`);\n  console.log(`Topic source: ${selectedCandidate?.source || trends.source}`);
+  console.log(`AI/Tech selected topic: ${selectedTrend}`);
+  console.log(`Topic source: ${selectedCandidate?.source || trends.source}`);
 
   const news = await getNewsContext(selectedTrend);
   fs.writeFileSync(path.join(process.cwd(), 'output', 'trend_news.json'), JSON.stringify(news, null, 2), 'utf8');
