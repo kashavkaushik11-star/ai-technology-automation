@@ -14,42 +14,13 @@ if (!GEMINI_API_KEY || !CLOUDFLARE_API_TOKEN || !CLOUDFLARE_ACCOUNT_ID) {
 }
 
 function localFallback() {
-  const facts = [
-    {
-      fact: 'क्या आपने कभी नोटिस किया है कि कोई नाम या शब्द याद नहीं आता, लेकिन कुछ देर बाद अचानक खुद याद आ जाता है? ऐसा इसलिए हो सकता है क्योंकि दिमाग उस जानकारी को पूरी तरह छोड़ता नहीं है। वह पीछे से उसे खोजता रहता है, और जब सही connection मिल जाता है तो जवाब अचानक सामने आ जाता है। आपके साथ ऐसा कितनी बार होता है?',
-      visual: 'A photorealistic cinematic close-up of a thoughtful person sitting quietly at a desk, briefly looking away while trying to remember something, then suddenly showing a subtle moment of realization. Slow gentle camera push-in, warm realistic window light, shallow depth of field, centered subject, natural room environment.'
-    },
-    {
-      fact: 'जब आप किसी कमरे में जाते हैं और अचानक भूल जाते हैं कि वहाँ क्यों आए थे, तो यह सिर्फ लापरवाही नहीं होती। जगह बदलने से आपका दिमाग context भी बदल देता है, जिससे पिछला विचार थोड़ी देर के लिए कम accessible हो सकता है। दरवाज़े से वापस उसी जगह जाने पर बात फिर याद आ जाना इसी तरह के effect से जुड़ा हो सकता है।',
-      visual: 'A photorealistic cinematic scene of a person entering a room, stopping with a puzzled expression, then looking back toward the doorway as the memory returns. Subtle handheld camera movement, realistic indoor lighting, shallow depth of field, centered subject, natural home environment.'
-    },
-    {
-      fact: 'कभी आपने देखा है कि किसी को जम्हाई लेते देखकर आपको भी जम्हाई आने लगती है? यह देखकर नकल करने जैसा लग सकता है, लेकिन इसके पीछे कई factors हो सकते हैं। लोगों में एक-दूसरे के व्यवहार और expressions अपने-आप notice और mirror करने की प्रवृत्ति होती है। इसलिए सामने वाले की छोटी-सी action भी आपके behavior को प्रभावित कर सकती है।',
-      visual: 'A photorealistic cinematic scene of two people sitting together in a quiet cafe, one person yawning naturally while the other notices and begins to yawn. Gentle camera drift, realistic soft lighting, shallow depth of field, centered subjects, authentic expressions, documentary-film atmosphere.'
-    },
-    {
-      fact: 'जब कोई गाना आपके दिमाग में बार-बार बजता रहता है, तो उसे रोकने की कोशिश कभी-कभी उल्टा उसे और noticeable बना देती है। दिमाग किसी विचार को दबाने की कोशिश करते हुए उसी विचार पर ध्यान बनाए रख सकता है। इसलिए कभी-कभी उस धुन को एक बार पूरा सुन लेना या ध्यान किसी दूसरे काम पर लगाना ज्यादा आसान महसूस होता है।',
-      visual: 'A photorealistic cinematic scene of a person working at a desk while a familiar song seems stuck in their mind, then calmly shifting attention to another task. Slow camera push, realistic afternoon light, shallow depth of field, centered subject, subtle expressive behavior.'
-    },
-    {
-      fact: 'जब आप किसी चीज़ को बहुत ध्यान से खोज रहे होते हैं, तो कई बार वही चीज़ सामने होते हुए भी दिखाई नहीं देती। इसका एक कारण attention है: दिमाग हर visual detail को बराबर महत्व नहीं देता। वह आपके लक्ष्य से जुड़ी जानकारी को प्राथमिकता देता है। इसलिए खोजते समय कभी-कभी वस्तु सामने होने के बावजूद आपकी नजर उसे ignore कर देती है।',
-      visual: 'A photorealistic cinematic scene of a person searching a cluttered desk for a small object, overlooking it, then suddenly noticing it directly in front of them. Slow camera movement, realistic daylight, shallow depth of field, centered subject and object, natural environment.'
-    },
-    {
-      fact: 'जब आप किसी कहानी को बार-बार सुनाते हैं, तो आपको लग सकता है कि आपकी memory बिल्कुल वैसी ही बनी हुई है। लेकिन यादें recording की तरह fixed नहीं होतीं। उन्हें याद करते समय दिमाग उन्हें दोबारा reconstruct करता है, इसलिए समय के साथ छोटी details बदल सकती हैं। इसी वजह से दो लोग एक ही घटना को थोड़ा अलग तरीके से याद कर सकते हैं।',
-      visual: 'A photorealistic cinematic scene of a person telling a familiar story to a friend, pausing thoughtfully as they reconstruct a memory. Slow subtle camera push-in, warm realistic lighting, shallow depth of field, centered faces, intimate documentary-film mood.'
-    },
-    {
-      fact: 'जब आप किसी काम को बीच में छोड़कर दूसरे काम पर चले जाते हैं, तो पहला काम दिमाग में अधूरा बना रह सकता है। यही वजह है कि कभी-कभी कोई अधूरा task अचानक याद आ जाता है, जबकि पूरा किया हुआ काम आसानी से दिमाग से निकल जाता है। हमारा ध्यान सिर्फ finished चीज़ों पर नहीं, बल्कि pending कामों पर भी टिक सकता है।',
-      visual: 'A photorealistic cinematic scene of a person leaving an unfinished notebook task on a desk, then suddenly remembering it while doing another activity. Smooth camera transition, realistic evening light, shallow depth of field, centered subject, believable home environment.'
-    },
-    {
-      fact: 'किसी व्यक्ति की पहली छाप बनाते समय हमारा दिमाग बहुत कम जानकारी से भी जल्दी एक overall impression बना लेता है। कपड़े, चेहरे के भाव, बोलने का तरीका और body language जैसी चीज़ें उस impression को प्रभावित कर सकती हैं। लेकिन पहली छाप हमेशा पूरी कहानी नहीं बताती। इसलिए किसी व्यक्ति को समझने के लिए सिर्फ शुरुआती कुछ seconds पर निर्भर करना सही नहीं होता।',
-      visual: 'A photorealistic cinematic scene of two strangers meeting for the first time, briefly observing each other before beginning a friendly conversation. Slow natural camera movement, realistic street-side lighting, shallow depth of field, centered subjects, authentic body language and expressions.'
-    }
-  ];
-  const item = facts[Math.floor(Date.now() / 86400000) % facts.length];
-  return `FACT:\n${item.fact}\nVISUAL:\n${item.visual}`;
+  const topic = process.env.AI_TECH_TOPIC || 'AI & Technology';
+  return `FACT:
+${topic} क्या है? आसान भाषा में समझिए: यह technology किस problem को solve करती है, इसके पीछे कौन-सा hardware या software काम करता है और इसका practical इस्तेमाल कहाँ होता है। इस video में हम concept को तीन छोटे visual steps में समझेंगे।
+CAPTION:
+${topic} को आसान हिंदी में समझिए।
+VISUAL:
+Photorealistic vertical 9:16 technology explainer about ${topic}. Show a specific real device, machine, chip, software interface or technical environment related to the topic. No generic psychology, no unrelated people, no news footage, no fake logos, no readable fake text, no watermark.`;
 }
 
 async function askGemini(prompt) {
@@ -181,11 +152,12 @@ function createSrt(text, duration, outPath) {
 function runFfmpeg(args) { execFileSync('ffmpeg', ['-y', ...args], { stdio: 'inherit' }); }
 
 function buildScenePrompts(baseVisual) {
-  const shared = `Keep the same main subject, wardrobe, location and overall visual identity across all three scenes. ${baseVisual}`;
+  const topic = process.env.AI_TECH_TOPIC || 'AI & Technology';
+  const shared = `Create a coherent photorealistic technology documentary about "${topic}". Keep visual identity consistent where appropriate, but make every scene visually different. Vertical 9:16. ${baseVisual}`;
   return [
-    `${shared} Scene 1 of 3: establish the situation and begin the main action. Slow cinematic push-in, natural subtle movement.`,
-    `${shared} Scene 2 of 3: continue the same moment from a slightly different camera angle with a clear change in body language or action. Gentle lateral camera drift, visually distinct composition.`,
-    `${shared} Scene 3 of 3: show the natural payoff or reaction to the action, using a closer composition and a subtle final camera move. Keep it believable and cinematic.`
+    `${shared} Scene 1: CLOSE-UP/ESTABLISHING SHOT. Clearly show the specific hardware, device, chip, machine, interface or technical environment that represents the topic. Slow push-in, strong detail, no generic human portrait.`,
+    `${shared} Scene 2: PROCESS SHOT. Show the technology actually working: data moving through a system, components interacting, a machine operating, or a clear before-to-after technical process. Use a different camera angle and composition with visible motion.`,
+    `${shared} Scene 3: REAL-WORLD APPLICATION SHOT. Show a believable practical use of the same technology in a real environment. Wider composition, different location or setup, clear cause-and-effect, subtle camera movement.`
   ];
 }
 
@@ -227,8 +199,17 @@ function buildReel(scenePaths, audioPath, srtPath, finalPath) {
   const outDir = path.join(process.cwd(), 'output');
   fs.mkdirSync(outDir, { recursive: true });
 
-  const combined = await askGemini(`Create ONE highly shareable psychology/human-behaviour fact for a Hindi Facebook Reel. It must be surprising but factually responsible. Return exactly three sections using these markers and nothing else:\nFACT:\n50-70 words in natural spoken Hindi using Devanagari script. This is for the voiceover. Start with a strong spoken hook. Do not invent statistics, medical claims or fake research. End with one natural question.\nCAPTION:\n20-35 words in simple Roman-script Hinglish summarizing the same fact. Use easy words, no Devanagari, no emojis, no hashtags, no English-only sentence. Keep it short enough for small bottom captions.\nVISUAL:\n40-70 words in English. Describe one photorealistic cinematic scene that visually represents the fact, one clear action, subtle camera movement, realistic lighting, depth and mood. Keep the main subject centered for vertical 9:16 cropping. No text, letters, numbers, logos or captions in the scene.`);
-
+  const topic = process.env.AI_TECH_TOPIC || 'AI & Technology';
+  const combined = await askGemini(`Create ONE original evergreen AI & Technology explainer for a Hindi Facebook Reel about ONLY this topic: "${topic}".
+This is NOT a trending-news video. Do not mention Google Trends, Google News, trending, viral search, breaking news, current events, today's trend, or recent headlines.
+Explain a stable technical concept accurately and simply. Use concrete technology details and avoid invented statistics, dates, prices, companies or news claims.
+Return exactly three sections:
+FACT:
+50-70 words in natural spoken Hindi using Devanagari. Start with a strong hook, explain what the technology is and how it works, then give one practical or surprising takeaway. End with a natural question.
+CAPTION:
+20-35 words in simple Hindi/Hinglish summarizing the same technology. No news framing and no hashtags.
+VISUAL:
+40-70 words in English describing a photorealistic vertical 9:16 technology scene that directly shows this topic. Mention specific hardware, software, machines, screens or environments relevant to the topic. No generic people, psychology imagery, unrelated cinematic people, news footage, fake text, logos or watermark.`);
   const normalized = String(combined || '')
     .replace(/```(?:text|markdown)?/gi, '')
     .replace(/```/g, '')
@@ -258,7 +239,7 @@ function buildReel(scenePaths, audioPath, srtPath, finalPath) {
   const srtPath = path.join(outDir, 'captions.srt');
   const finalPath = path.join(outDir, 'viral_fact_reel.mp4');
 
-  fs.writeFileSync(path.join(outDir, 'caption.txt'), fact + '\n\n#AI #ArtificialIntelligence #Technology #TechNews #AITech #FutureTech #AIIndia #Reels', 'utf8');
+  fs.writeFileSync(path.join(outDir, 'caption.txt'), caption, 'utf8');
   fs.writeFileSync(path.join(outDir, 'visual_prompt.txt'), scenePrompts.join('\n\n--- SCENE 2 ---\n\n'), 'utf8');
 
   console.log('Generating Hindi voice...');
