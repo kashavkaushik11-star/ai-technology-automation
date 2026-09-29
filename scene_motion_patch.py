@@ -55,7 +55,7 @@ s, n = re.subn(r'function buildTenSecondClip\(aiVideoPath, outPath\) \{.*?\n\}',
 if n != 1: raise SystemExit(f'buildTenSecondClip replacement failed: {n}')
 
 # Show the actual spoken Hindi in the video, not the short Roman Hinglish post caption.
-s, n = re.subn(r'createSrt\(caption, Math\.min\(audioDuration, TOTAL_VIDEO_DURATION\), srtPath\);', 'createSrt(fact, Math.min(audioDuration, TOTAL_VIDEO_DURATION), srtPath);', s, count=1)
+s, n = re.subn(r'createSrt\((?:caption|fact), Math\.min\(audioDuration, TOTAL_VIDEO_DURATION\), srtPath\);', 'createSrt(fact, Math.min(audioDuration, TOTAL_VIDEO_DURATION), srtPath);', s, count=1)
 if n != 1: raise SystemExit('subtitle source replacement failed')
 s, n = re.subn(r'FontName=DejaVu Sans', 'FontName=Noto Sans Devanagari', s, count=1)
 if n != 1: raise SystemExit('subtitle font replacement failed')
@@ -65,7 +65,7 @@ if n != 1: raise SystemExit('subtitle font replacement failed')
 loop_pattern = r'''  for \(let i = 0; i < 3; i\+\+\) \{[\s\S]*?  \}\n\n  console\.log\('Joining 3 x 10-second scenes into exactly 30 seconds\.\.\.'\);'''
 loop_replacement = '''  console.log('Generating 3 topic-specific visual scenes...');
   for (let i = 0; i < 3; i++) {
-    const topicScenePrompt = `Photorealistic cinematic documentary/news visual for a vertical 9:16 Hindi trending-topic Reel. This image MUST visually represent the exact subject and action described below. No generic phone-scrolling, no generic psychology, no unrelated stock people, no abstract symbols, no fake readable text, no fake logos, no watermark. Natural realistic lighting, believable environment, editorial photography, strong subject clarity. Scene ${i + 1} of 3: ${scenePrompts[i]}`;
+    const topicScenePrompt = `Photorealistic cinematic documentary visual for a vertical 9:16 evergreen Hindi AI & Technology explainer. This image MUST visually represent the exact subject and action described below. No generic phone-scrolling, no psychology imagery, no unrelated stock people, no abstract symbols, no fake readable text, no fake logos, no watermark. Natural realistic lighting, believable environment, documentary photography, strong subject clarity. Scene ${i + 1} of 3: ${scenePrompts[i]}`;
     console.log(`Generating topic-specific image ${i + 1}/3...`);
     await generateImage(topicScenePrompt, imagePaths[i]);
     console.log(`Generating 4-second motion ${i + 1}/3...`);
