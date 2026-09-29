@@ -110,6 +110,17 @@ function srtTime(seconds) {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')},${String(milli).padStart(3, '0')}`;
 }
 
+function makeViralHashtags(topic) {
+  const clean = String(topic || '').toLowerCase();
+  const tags = ['#AI', '#ArtificialIntelligence', '#Technology', '#Tech', '#FutureTech', '#Innovation', '#TechExplained', '#HindiTech'];
+  if (/robot|humanoid|रोबोट/.test(clean)) tags.unshift('#HumanoidRobots', '#Robotics');
+  else if (/quantum|क्वांटम/.test(clean)) tags.unshift('#QuantumComputing', '#QuantumTech');
+  else if (/chip|semiconductor|processor|gpu|cpu|सेमीकंडक्टर/.test(clean)) tags.unshift('#AIChip', '#Semiconductor');
+  else if (/3d|printer|प्रिंट/.test(clean)) tags.unshift('#3DPrinting');
+  else if (/car|vehicle|driving|गाड़ी/.test(clean)) tags.unshift('#FutureCars', '#SelfDriving');
+  return [...new Set(tags)].slice(0, 12).join(' ');
+}
+
 function wrapCaption(text, maxChars = 30) {
   const words = text.trim().split(/\s+/), lines = [];
   let line = '';
@@ -263,7 +274,7 @@ VISUAL:
   const srtPath = path.join(outDir, 'captions.srt');
   const finalPath = path.join(outDir, 'viral_fact_reel.mp4');
 
-  fs.writeFileSync(path.join(outDir, 'caption.txt'), caption, 'utf8');
+  const hashtags = makeViralHashtags(topic);\n  const socialCaption = `${caption}\\n\\n${hashtags}`;\n  fs.writeFileSync(path.join(outDir, 'caption.txt'), socialCaption, 'utf8');
   fs.writeFileSync(path.join(outDir, 'visual_prompt.txt'), scenePrompts.join('\n\n--- SCENE 2 ---\n\n'), 'utf8');
 
   console.log('Generating Hindi voice...');
