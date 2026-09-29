@@ -128,7 +128,8 @@ async function getAiNewsCandidates() {
 function selectRotating(candidates) {
   const now = new Date();
   const dayNumber = Math.floor(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) / 86400000);
-  const slot = Math.floor(now.getUTCHours() / 8) % 3;
+  const hour = now.getUTCHours();
+  const slot = hour === 3 ? 0 : hour === 8 ? 1 : hour === 15 ? 2 : Math.floor(hour / 8) % 3;
   const index = (dayNumber * 3 + slot) % candidates.length;
   return candidates[index];
 }
