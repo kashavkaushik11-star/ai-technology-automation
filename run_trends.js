@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { getGoogleTrends } = require('./trend_selector');
+const { getGoogleTrends, selectRotating } = require('./trend_selector');
 
 function decodeXml(value) {
   return String(value || '')
@@ -73,13 +73,13 @@ async function main() {
     return;
   }
 
-  const selectedTrend = trends.candidates?.[0]?.title?.trim() || '';
+  const selectedCandidate = trends.candidates?.length ? selectRotating(trends.candidates) : null;\n  const selectedTrend = selectedCandidate?.title?.trim() || '';
   if (!selectedTrend) {
     throw new Error('No Google Trends topic was selected; refusing to generate a generic fact video.');
   }
 
   fs.writeFileSync(path.join(process.cwd(), 'output', 'selected_trend.txt'), selectedTrend + '\n', 'utf8');
-  console.log(`Google Trends selected topic: ${selectedTrend}`);
+  console.log(`AI/Tech selected topic: ${selectedTrend}`);\n  console.log(`Topic source: ${selectedCandidate?.source || trends.source}`);
 
   const news = await getNewsContext(selectedTrend);
   fs.writeFileSync(path.join(process.cwd(), 'output', 'trend_news.json'), JSON.stringify(news, null, 2), 'utf8');
@@ -89,7 +89,7 @@ async function main() {
     ? news.items.map((item, index) => `${index + 1}. ${item.title} | ${item.source || 'Unknown source'} | ${item.pubDate || ''}\n   ${item.description || ''}`).join('\n')
     : 'No matching Google News articles were available. Do not invent current events.';
 
-  const trendContext = `\n\nMANDATORY GOOGLE TRENDS EXPLAINER MODE (INDIA):\nSelected Google Trends topic: "${selectedTrend}"\n\nThis is NOT a generic facts video and NOT a psychology-facts video. The entire Reel must be ABOUT THIS EXACT TRENDING TOPIC. Explain what the topic is, why it is trending now, what is happening, and the most useful context a viewer needs. Use the recent news context below as the factual basis. Do not invent names, numbers, quotes, dates, events or causes that are not supported by the supplied news context. If the sources are insufficient, say so briefly instead of making something up.\n\nRECENT GOOGLE NEWS CONTEXT:\n${newsContext}\n\nLANGUAGE: Voiceover and on-screen subtitles must be natural, simple Hindi in Devanagari. Translate/regroup the trend title into Hindi when needed, but keep the exact original topic available in the explanation.\n\nVISUAL RULE: The visual must directly depict ${selectedTrend}. Do NOT generate generic people looking at phones, psychology scenes, memory scenes, yawning, abstract stock footage, or unrelated cinematic people. Make each of the three scenes visually different but about the same real-world topic: Scene 1 = establish the topic, Scene 2 = show the main development/action, Scene 3 = show reaction/consequence/context. Use realistic documentary/news-style visuals and specific objects, locations, environments and actions associated with the topic. No fake readable text, no fake logos, no watermark.\n\nOUTPUT: Return exactly these sections: FACT, CAPTION, VISUAL. FACT is a 25-35 second Hindi news-style explainer, not a trivia/fact. CAPTION is a short social caption about the trend. VISUAL is a detailed topic-specific three-scene visual direction.`;
+  const trendContext = `\n\nMANDATORY AI & TECHNOLOGY NEWS MODE (INDIA):\nSelected AI/Tech topic: "${selectedTrend}"\n\nThis is NOT a generic facts video and NOT a psychology-facts video. The entire Reel must be ABOUT THIS EXACT AI/TECH TOPIC. Explain what the technology is, what changed or is being discussed now, why it matters, and the most useful context a viewer needs. Use the recent news context below as the factual basis. Do not invent names, numbers, quotes, dates, events or causes that are not supported by the supplied news context. If the sources are insufficient, say so briefly instead of making something up.\n\nRECENT GOOGLE NEWS CONTEXT:\n${newsContext}\n\nLANGUAGE: Voiceover and on-screen subtitles must be natural, simple Hindi in Devanagari. Translate/regroup the trend title into Hindi when needed, but keep the exact original topic available in the explanation.\n\nVISUAL RULE: The visual must directly depict ${selectedTrend}. Do NOT generate generic people looking at phones, psychology scenes, memory scenes, yawning, abstract stock footage, or unrelated cinematic people. Make each of the three scenes visually different but about the same real-world topic: Scene 1 = establish the topic, Scene 2 = show the main development/action, Scene 3 = show reaction/consequence/context. Use realistic documentary/news-style visuals and specific objects, locations, environments and actions associated with the topic. No fake readable text, no fake logos, no watermark.\n\nOUTPUT: Return exactly these sections: FACT, CAPTION, VISUAL. FACT is a 25-35 second Hindi news-style explainer, not a trivia/fact. CAPTION is a short social caption about the trend. VISUAL is a detailed topic-specific three-scene visual direction.`;
 
   const originalFetch = global.fetch;
   global.fetch = async (url, options = {}) => {
