@@ -1,182 +1,130 @@
-// Strict AI & Technology topic selector.
-// Google Trends is only a signal; unrelated India trends are NEVER allowed.
-// If Google Trends has no AI/Tech topic, current AI/Tech news is used instead.
+// AI & Technology topic engine.
+// Google Trends and Google News are intentionally NOT used.
+// Each GitHub Actions run gets a different topic from this pool.
 
-const TRENDS_URL = 'https://trends.google.com/trending/rss?geo=IN';
-
-const NEWS_QUERIES = [
-  'AI artificial intelligence technology',
-  'ChatGPT Gemini OpenAI Anthropic AI',
-  'AI agents robotics humanoid robots',
-  'semiconductor GPU chip technology',
-  'smartphone technology cybersecurity AI'
+const AI_TECH_TOPICS = [
+'AI agents: AI खुद apps और websites पर काम कैसे कर सकता है',
+'Multimodal AI: text, image, audio और video को एक साथ समझना',
+'On-device AI: phone में बिना cloud के AI कैसे चलता है',
+'AI smartphones: phones में AI वास्तव में क्या करता है',
+'Humanoid robots: इंसानों जैसी shape वाले robots कैसे काम करते हैं',
+'AI coding assistants: software development कैसे बदल रहा है',
+'Small language models: छोटे AI models phones पर कैसे चलते हैं',
+'AI voice cloning: AI इंसानी आवाज जैसी voice कैसे बनाता है',
+'AI image generation: text से realistic image कैसे बनती है',
+'AI video generation: text से video बनाने की technology',
+'AI cybersecurity: AI cyber threats को कैसे detect करता है',
+'AI chips: GPU और AI accelerators क्यों जरूरी हैं',
+'AI data centres: AI को बड़े data centres की जरूरत क्यों होती है',
+'AI search: traditional search और AI search में क्या अंतर है',
+'Personal AI assistants: future AI assistant क्या कर सकता है',
+'AI robotics: robots को देखने और समझने की ability',
+'AI healthcare: medical images को AI कैसे analyse करता है',
+'Indian language AI: Hindi और Indian languages के लिए AI',
+'Smart glasses: glasses में AI कैसे काम कर सकता है',
+'Autonomous cars: self-driving vehicles सड़क को कैसे समझते हैं',
+'AI fraud detection: digital payments में AI fraud कैसे पकड़ता है',
+'AI education: personalized learning में AI का इस्तेमाल',
+'Semiconductor manufacturing: modern chip बनाना इतना कठिन क्यों है',
+'Cloud AI: AI models को cloud computing की जरूरत क्यों है',
+'Open-source AI: open और closed AI models में अंतर',
+'AI reasoning models: AI reasoning पर इतना focus क्यों कर रहा है',
+'NPU: smartphone में Neural Processing Unit क्या करता है',
+'AI smartphone processors: phone में dedicated AI hardware',
+'AI agriculture: खेतों में AI crop monitoring कैसे करता है',
+'AI banking: banks AI से fraud और risk कैसे detect करते हैं',
+'AI transport: traffic और routes predict करने में AI',
+'AI in space: satellite data में AI का इस्तेमाल',
+'Quantum computing और AI: दोनों technologies का connection',
+'AI recommendations: apps content आपको कैसे recommend करते हैं',
+'AI music generation: AI music कैसे बनाता है',
+'Synthetic media: AI photos, voices और videos की technology',
+'AI watermarking: AI-generated content की पहचान',
+'AI hallucination: AI गलत information क्यों बना देता है',
+'AI context window: AI एक बार में कितना information समझता है',
+'AI memory: AI assistants previous information कैसे use करते हैं',
+'AI model training: बड़े AI model को train कैसे किया जाता है',
+'AI inference: AI answer generate करते समय क्या करता है',
+'GPU vs CPU: AI workloads में GPU useful क्यों है',
+'Edge computing: AI processing device के पास करने का फायदा',
+'AI APIs: developers apps में AI कैसे जोड़ते हैं',
+'AI automation: repetitive tasks AI से कैसे automate होते हैं',
+'AI customer support: chatbots customer service कैसे संभालते हैं',
+'AI translation: real-time language translation कैसे काम करती है',
+'AI subtitles: speech को automatically text में बदलना',
+'Speech recognition: AI आवाज को text में कैसे बदलता है',
+'Text-to-speech: AI natural human voice कैसे बनाता है',
+'Computer vision: AI camera में objects कैसे पहचानता है',
+'Object detection: self-driving systems objects कैसे detect करते हैं',
+'Deepfake detection: fake AI video को कैसे पहचाना जाता है',
+'AI phishing detection: suspicious emails को AI कैसे पहचानता है',
+'AI malware detection: security systems suspicious software कैसे detect करते हैं',
+'Robot learning: robots नए tasks कैसे सीखते हैं',
+'Warehouse robots: warehouses में robots कैसे काम करते हैं',
+'Factory AI: manufacturing में AI quality inspection',
+'Drone AI: drones AI की मदद से क्या कर सकते हैं',
+'AI navigation: robots और vehicles रास्ता कैसे plan करते हैं',
+'AI predictive maintenance: machine खराब होने से पहले संकेत',
+'AI energy management: AI energy consumption कैसे optimize करता है',
+'AI weather models: मौसम prediction में machine learning',
+'AI medical diagnosis: AI doctor की मदद कैसे करता है',
+'AI drug discovery: medicines खोजने में AI',
+'AI tutors: AI student के level के अनुसार कैसे समझाता है',
+'AI email assistants: email summarize और draft करना',
+'AI meeting assistants: meeting से automatic notes बनाना',
+'AI document analysis: हजारों pages को AI कैसे analyse करता है',
+'AI spreadsheet assistants: data analysis में AI',
+'AI presentation tools: text से presentation बनाना',
+'AI design tools: generative AI से design बनाना',
+'AI video editors: editing के काम AI कैसे करता है',
+'AI photo editing: AI photo में objects और background बदलना',
+'AI super-resolution: low-resolution image को AI improve करना',
+'AI noise cancellation: headphones unwanted sound कैसे हटाते हैं',
+'AI camera enhancement: phone low-light photos कैसे improve करता है',
+'AI battery optimization: AI battery कैसे बचाता है',
+'AI chip efficiency: कम power में ज्यादा AI performance',
+'Chip fabrication: silicon से modern chip कैसे बनती है',
+'Chip packaging: advanced chip packaging क्यों जरूरी है',
+'AI hardware cooling: powerful AI chips को cool क्यों रखना पड़ता है',
+'Data centre cooling: AI servers की heat कैसे manage होती है',
+'AI electricity demand: AI infrastructure को इतनी energy क्यों चाहिए',
+'Optical computing: light से computing करने का idea',
+'Neuromorphic computing: brain-inspired chips कैसे काम करते हैं',
+'AI model compression: बड़े models को छोटा और तेज करना',
+'Quantization: AI models को कम memory में चलाना',
+'AI fine-tuning: model को specific task के लिए adapt करना',
+'RAG: AI external knowledge से answer कैसे बनाता है',
+'AI agents और tools: AI external tools कैसे use करता है',
+'AI planning: AI complex task को छोटे steps में कैसे तोड़ता है',
+'AI safety: autonomous AI को controlled रखना क्यों जरूरी है',
+'AI evaluation: AI model की quality कैसे test होती है',
+'AI benchmarks: AI models की capabilities कैसे compare होती हैं',
+'AI privacy: personal data और AI assistants की privacy',
+'AI local processing: sensitive data device पर process करने का फायदा',
+'Wearable AI: watches और earbuds में AI',
+'AI earbuds: real-time translation और voice assistance',
+'AI smart home: घर के devices AI से कैसे coordinate होते हैं',
+'AI accessibility: AI technology को ज्यादा accessible कैसे बनाता है',
+'AI traffic cameras: cities AI से traffic कैसे monitor करती हैं',
+'AI logistics: delivery routes और warehouses optimize करना',
+'AI 3D printing: 3D printing में AI का इस्तेमाल',
+'AI construction: construction sites में computer vision',
+'AI-powered smartphone search: phone में direct AI answers',
+'Future AI assistants: personal AI कैसे evolve हो सकता है'
 ];
 
-const STRONG_AI = /\b(ai|artificial intelligence|chatgpt|gemini|claude|grok|openai|anthropic|deepmind|copilot|perplexity|mistral|llama|qwen|deepseek|robot|robots|robotics|humanoid|machine learning|computer vision|generative ai|image generator|video generator|voice ai|deepfake|ai agent|ai agents|agentic ai|nvidia|gpu|semiconductor|chip|quantum computing)\b/i;
-const TECH_CONTEXT = /\b(technology|tech|software|cybersecurity|smartphone|iphone|android|processor|data centre|data center|cloud computing|wearable|smart glasses|autonomous|drone|satellite|coding|developer|app|device)\b/i;
-const HARD_BLOCK = /\b(scorecard|standings|fixture|live score|odds|cricket score|football score|match result|horoscope|astrology|lottery|celebrity wedding)\b/i;
-
-const FALLBACK_TOPICS = [
-  'AI agents that can complete tasks on your behalf',
-  'How multimodal AI understands images, audio and video',
-  'AI-powered smartphones and on-device intelligence',
-  'Humanoid robots and what they can actually do today',
-  'AI coding assistants and the future of software development',
-  'Small AI models running directly on phones and laptops',
-  'AI voice cloning and how voice authentication is changing',
-  'AI image generators and the new era of synthetic media',
-  'AI video generation and realistic text-to-video systems',
-  'AI cybersecurity tools that detect threats automatically',
-  'The race for faster AI chips and GPUs',
-  'Why AI data centres need so much electricity',
-  'AI search engines and how web search is changing',
-  'AI assistants that can use apps and websites for users',
-  'Robots learning tasks through vision and language models',
-  'AI in healthcare: faster scans and clinical decision support',
-  'AI translation for Indian languages',
-  'AI-powered smart glasses and wearable computers',
-  'Autonomous cars and the role of computer vision',
-  'AI fraud detection in digital payments',
-  'AI-powered education and personalized learning',
-  'Semiconductor manufacturing and India’s technology push',
-  'AI cloud computing and why compute matters',
-  'Open-source AI models versus closed AI models',
-  'AI memory, reasoning and why newer models use more compute',
-  'AI-powered search inside smartphones',
-  'Robotic factories and AI-controlled manufacturing',
-  'AI assistants for small businesses',
-  'AI-generated music and synthetic voices',
-  'How AI agents could change everyday apps',
-  'AI safety systems designed to control autonomous agents',
-  'AI-powered cameras and computer vision',
-  'Next-generation smartphone processors built for AI',
-  'AI in agriculture: crop monitoring and smart farming',
-  'AI in banking: fraud detection and customer service',
-  'AI in transport: route prediction and autonomous systems',
-  'AI in space technology and satellite data analysis',
-  'Quantum computing and its connection with AI',
-  'AI-powered search, shopping and recommendations',
-  'The future of personal AI assistants'
-];
-
-function decodeXml(value) {
-  return String(value || '')
-    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim();
+function selectTopic(runNumber = 1) {
+  const n = Math.max(1, Number(runNumber) || 1);
+  return AI_TECH_TOPICS[(n - 1) % AI_TECH_TOPICS.length];
 }
 
-function isAiTech(title) {
-  if (!title || HARD_BLOCK.test(title)) return false;
-  return STRONG_AI.test(title) || (
-    TECH_CONTEXT.test(title) &&
-    /\b(launch|launched|new|update|unveils|unveiled|released|release|platform|model|device|chip|processor|software)\b/i.test(title)
-  );
-}
-
-function relevance(title) {
-  let score = 0;
-  if (STRONG_AI.test(title)) score += 40;
-  if (TECH_CONTEXT.test(title)) score += 15;
-  if (/\b(breaking|launch|launched|new|update|unveils|unveiled|released|release|first|record|announces|announced)\b/i.test(title)) score += 15;
-  return score;
-}
-
-async function fetchXml(url) {
-  const response = await fetch(url, { headers: { 'User-Agent': 'ai-tech-video-automation/2.0' } });
-  if (!response.ok) throw new Error(`RSS ${response.status}`);
-  return response.text();
-}
-
-function parseItems(xml, source) {
-  return [...xml.matchAll(/<item>([\s\S]*?)<\/item>/gi)].map(match => {
-    const block = match[1];
-    return {
-      title: decodeXml(block.match(/<title>([\s\S]*?)<\/title>/i)?.[1]),
-      traffic: decodeXml(block.match(/<ht:approx_traffic>([\s\S]*?)<\/ht:approx_traffic>/i)?.[1]),
-      pubDate: decodeXml(block.match(/<pubDate>([\s\S]*?)<\/pubDate>/i)?.[1]),
-      source,
-    };
-  }).filter(x => x.title && isAiTech(x.title));
-}
-
-async function getAiNewsCandidates() {
-  const all = [];
-  for (const q of NEWS_QUERIES) {
-    try {
-      const url = `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=hi&gl=IN&ceid=IN:hi`;
-      const xml = await fetchXml(url);
-      all.push(...parseItems(xml, 'Google News AI/Tech'));
-    } catch (error) {
-      console.warn(`AI/Tech News query failed: ${q} - ${error.message}`);
-    }
-  }
-
-  const seen = new Set();
-  return all
-    .filter(item => {
-      const key = item.title.toLowerCase();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    })
-    .map(item => ({ ...item, aiTechScore: relevance(item.title) }))
-    .sort((a, b) => b.aiTechScore - a.aiTechScore);
-}
-
-function selectRotating(candidates) {
-  const now = new Date();
-  const dayNumber = Math.floor(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) / 86400000);
-  const hour = now.getUTCHours();
-  const slot = hour === 3 ? 0 : hour === 8 ? 1 : hour === 15 ? 2 : Math.floor(hour / 8) % 3;
-  const index = (dayNumber * 3 + slot) % candidates.length;
-  return candidates[index];
-}
-
-async function getGoogleTrends() {
-  let trendItems = [];
-  try {
-    const xml = await fetchXml(TRENDS_URL);
-    trendItems = parseItems(xml, 'Google Trends AI/Tech');
-  } catch (error) {
-    console.warn(`Google Trends unavailable: ${error.message}`);
-  }
-
-  const newsItems = await getAiNewsCandidates();
-
-  const pool = [...trendItems, ...newsItems];
-  const seen = new Set();
-  const candidates = pool.filter(item => {
-    const key = item.title.toLowerCase();
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  }).sort((a, b) => (b.aiTechScore || 0) - (a.aiTechScore || 0));
-
-  if (!candidates.length) {
-    const fallback = FALLBACK_TOPICS.map(title => ({
-      title,
-      source: 'AI/Tech evergreen rotation',
-      pubDate: new Date().toISOString(),
-      aiTechScore: 50
-    }));
-    return {
-      source: 'AI/Tech rotation fallback',
-      niche: 'AI & Technology',
-      fetchedAt: new Date().toISOString(),
-      candidates: fallback,
-      fallback: true
-    };
-  }
-
+function getTopics() {
   return {
-    source: 'Google Trends + Google News AI/Tech',
+    source: 'AI & Technology curated rotation',
     niche: 'AI & Technology',
     fetchedAt: new Date().toISOString(),
-    candidates: candidates.slice(0, 40),
-    fallback: false
+    candidates: AI_TECH_TOPICS.map((title, index) => ({ title, index }))
   };
 }
 
-module.exports = { getGoogleTrends, selectRotating };
+module.exports = { getTopics, selectTopic, AI_TECH_TOPICS };
