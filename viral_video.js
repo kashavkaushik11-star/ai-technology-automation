@@ -274,7 +274,9 @@ VISUAL:
   const srtPath = path.join(outDir, 'captions.srt');
   const finalPath = path.join(outDir, 'viral_fact_reel.mp4');
 
-  const hashtags = makeViralHashtags(topic);\n  const socialCaption = `${caption}\\n\\n${hashtags}`;\n  fs.writeFileSync(path.join(outDir, 'caption.txt'), socialCaption, 'utf8');
+  const hashtags = makeViralHashtags(topic);
+  const socialCaption = `${caption}\n\n${hashtags}`;
+  fs.writeFileSync(path.join(outDir, 'caption.txt'), socialCaption, 'utf8');
   fs.writeFileSync(path.join(outDir, 'visual_prompt.txt'), scenePrompts.join('\n\n--- SCENE 2 ---\n\n'), 'utf8');
 
   console.log('Generating Hindi voice...');
