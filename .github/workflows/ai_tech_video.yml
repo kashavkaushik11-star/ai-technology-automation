@@ -3,11 +3,11 @@ name: AI & Technology Viral Videos
 on:
   workflow_dispatch:
   schedule:
-    # 09:00, 13:00, 17:00 and 21:00 IST (UTC+5:30)
-    - cron: '30 3 * * *'
-    - cron: '30 7 * * *'
-    - cron: '30 11 * * *'
-    - cron: '30 15 * * *'
+    # 09:05, 13:05, 17:05 and 21:05 IST (UTC+5:30)
+    - cron: '35 3 * * *'
+    - cron: '35 7 * * *'
+    - cron: '35 11 * * *'
+    - cron: '35 15 * * *'
 
 jobs:
   generate:
