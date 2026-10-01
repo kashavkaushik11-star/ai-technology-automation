@@ -3,11 +3,14 @@ name: AI & Technology Viral Videos
 on:
   workflow_dispatch:
   schedule:
-    # 09:05, 13:05, 17:05 and 21:05 IST (UTC+5:30)
-    - cron: '35 3 * * *'
-    - cron: '35 7 * * *'
-    - cron: '35 11 * * *'
-    - cron: '35 15 * * *'
+    # Watch every 15 minutes (IST). The workflow itself decides when a post is due.
+    # Target posting slots: 09:00, 13:00, 17:00 and 21:00 IST.
+    - cron: '7,22,37,52 * * * *'
+      timezone: "Asia/Kolkata"
+
+concurrency:
+  group: ai-tech-video
+  cancel-in-progress: false
 
 jobs:
   generate:
@@ -16,26 +19,91 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Get India time
+        id: clock
+        run: |
+          set -eu
+          mkdir -p .ai-tech-post-state
+          echo "date=$(TZ=Asia/Kolkata date +%F)" >> "$GITHUB_OUTPUT"
+          echo "now=$(TZ=Asia/Kolkata date '+%F %H:%M:%S')" >> "$GITHUB_OUTPUT"
+          echo "India time: $(TZ=Asia/Kolkata date '+%F %H:%M:%S %Z')"
+
+      - name: Restore today's post state
+        if: github.event_name == 'schedule'
+        uses: actions/cache/restore@v4
+        with:
+          path: .ai-tech-post-state
+          key: ai-tech-post-state-${{ steps.clock.outputs.date }}-${{ github.run_id }}
+          restore-keys: |
+            ai-tech-post-state-${{ steps.clock.outputs.date }}-
+
+      - name: Decide whether a scheduled post is due
+        id: slot
+        if: github.event_name == 'schedule'
+        env:
+          NOW: ${{ steps.clock.outputs.now }}
+        run: |
+          set -eu
+
+          date_part="$(echo "$NOW" | cut -d' ' -f1)"
+          hour="$(echo "$NOW" | cut -d' ' -f2 | cut -d: -f1)"
+          minute="$(echo "$NOW" | cut -d' ' -f2 | cut -d: -f2)"
+          now_minutes=$((10#$hour * 60 + 10#$minute))
+
+          run_slot=""
+
+          for slot_time in 09:00 13:00 17:00 21:00; do
+            sh="$((10#$(echo "$slot_time" | cut -d: -f1)))"
+            sm="$((10#$(echo "$slot_time" | cut -d: -f2)))"
+            slot_minutes=$((sh * 60 + sm))
+            marker=".ai-tech-post-state/\${date_part}_\${slot_time//:/}.posted"
+
+            if [ "$now_minutes" -ge "$slot_minutes" ] && [ ! -f "$marker" ]; then
+              run_slot="$slot_time"
+              break
+            fi
+          done
+
+          if [ -n "$run_slot" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "slot=$run_slot" >> "$GITHUB_OUTPUT"
+            echo "Due slot found: $run_slot IST"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "slot=" >> "$GITHUB_OUTPUT"
+            echo "No scheduled post is due right now."
+          fi
+
+      - name: Stop when no scheduled post is due
+        if: github.event_name == 'schedule' && steps.slot.outputs.run != 'true'
+        run: echo "Watchdog check only — no video generation needed."
+
       - name: Setup Node
+        if: github.event_name == 'workflow_dispatch' || steps.slot.outputs.run == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: Setup Python
+        if: github.event_name == 'workflow_dispatch' || steps.slot.outputs.run == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Install FFmpeg and Devanagari fonts
+        if: github.event_name == 'workflow_dispatch' || steps.slot.outputs.run == 'true'
         run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-noto-core fontconfig && fc-cache -f -v
 
       - name: Install Python dependencies
+        if: github.event_name == 'workflow_dispatch' || steps.slot.outputs.run == 'true'
         run: pip install -r requirements.txt
 
       - name: Apply scene motion fix
+        if: github.event_name == 'workflow_dispatch' || steps.slot.outputs.run == 'true'
         run: python scene_motion_patch.py
 
       - name: Generate AI & Technology video
+        if: github.event_name == 'workflow_dispatch' || steps.slot.outputs.run == 'true'
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -54,14 +122,15 @@ jobs:
           exit 1
 
       - name: Upload AI/Tech video artifact
+        if: github.event_name == 'workflow_dispatch' || steps.slot.outputs.run == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: ai-tech-video
           path: output/
           retention-days: 3
 
-      - name: Auto-post AI/Tech video to new Facebook Page
-        if: success() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+      - name: Auto-post AI/Tech video to Facebook Page
+        if: success() && (github.event_name == 'workflow_dispatch' || steps.slot.outputs.run == 'true')
         env:
           FACEBOOK_PAGE_ID: ${{ secrets.AI_TECH_FACEBOOK_PAGE_ID }}
           FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.AI_TECH_FACEBOOK_PAGE_ACCESS_TOKEN }}
@@ -77,3 +146,17 @@ jobs:
           done
           echo "AI/Tech Facebook posting failed after 5 attempts."
           exit 1
+
+      - name: Mark scheduled slot as posted
+        if: success() && github.event_name == 'schedule' && steps.slot.outputs.run == 'true'
+        run: |
+          set -eu
+          marker=".ai-tech-post-state/${{ steps.clock.outputs.date }}_${{ steps.slot.outputs.slot }}.posted"
+          echo "Posted successfully at $(TZ=Asia/Kolkata date '+%F %H:%M:%S %Z')" > "$marker"
+
+      - name: Save updated post state
+        if: success() && github.event_name == 'schedule' && steps.slot.outputs.run == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .ai-tech-post-state
+          key: ai-tech-post-state-${{ steps.clock.outputs.date }}-${{ github.run_id }}
