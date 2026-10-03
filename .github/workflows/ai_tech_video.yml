@@ -3,9 +3,9 @@ name: AI & Technology Viral Videos
 on:
   workflow_dispatch:
   schedule:
-    # Watch every 15 minutes (IST). The workflow itself decides when a post is due.
+    # Watch every 5 minutes (IST). The workflow itself decides when a post is due.
     # Target posting slots: 09:00, 13:00, 17:00 and 21:00 IST.
-    - cron: '7,22,37,52 * * * *'
+    - cron: '*/5 * * * *'
       timezone: "Asia/Kolkata"
 
 concurrency:
